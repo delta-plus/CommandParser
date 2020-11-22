@@ -29,10 +29,21 @@ public class CommandParser {
 
   public void parse() {
     if (text.length() > 0) {
-      StringTokenizer tokens = new StringTokenizer(text);
+      for (String cmd : text.split(";")) {
+        StringTokenizer tokens = new StringTokenizer(cmd);
+        String keyword;
 
-      if (tokens.nextToken().equalsIgnoreCase("DO")) {
-        parseDoCmds(tokens);
+	if (tokens.hasMoreTokens()) {
+          keyword = tokens.nextToken();
+	} else {
+          continue;
+        }
+          
+        if (keyword.equalsIgnoreCase("DO")) {
+          parseDoCmds(tokens);
+        } else if (keyword.equalsIgnoreCase("Test")) {
+          System.out.println("Success!");
+        }
       }
     }
   }
