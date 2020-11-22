@@ -61,6 +61,7 @@ public class CommandParser {
 
   public void parseDoCmds(StringTokenizer tokens) {
     String keyword;
+    String id;
 
     if (tokens.hasMoreTokens()) {
       keyword = tokens.nextToken();
@@ -69,8 +70,6 @@ public class CommandParser {
     }
 
     if (keyword.equalsIgnoreCase("BRAKE")) {
-      String id;
-
       if (tokens.hasMoreTokens()) {
         id = tokens.nextToken();
       } else {
@@ -92,7 +91,48 @@ public class CommandParser {
   }
 
   public void parseDoSelectCmds(StringTokenizer tokens) {
-    ;
+    String keyword;
+    String id;
+
+    if (tokens.hasMoreTokens()) {
+      keyword = tokens.nextToken();
+    } else {
+      return;
+    }
+
+    if (keyword.equalsIgnoreCase("SWITCH")) {
+      if (tokens.hasMoreTokens()) {
+        id = tokens.nextToken();
+      } else {
+        return;
+      }
+
+      Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+      Matcher matcher = pattern.matcher(id);
+
+      if(!matcher.find()) {
+        System.out.println("Bad ID.");
+	return;
+      }
+
+      if (tokens.hasMoreTokens() && tokens.nextToken().equalsIgnoreCase("PATH")) {
+        String switchType;
+
+        if (tokens.hasMoreTokens()) {
+	  switchType =  tokens.nextToken();
+        } else {
+          return;
+        }
+
+        if (switchType.equalsIgnoreCase("PRIMARY")) {
+          A_Command command = new CommandBehavioralSelectSwitch(id, true);
+          parserHelper.getActionProcessor().schedule(command);
+	} else if (switchType.equalsIgnoreCase("SECONDARY")) {
+          A_Command command = new CommandBehavioralSelectSwitch(id, false);
+          parserHelper.getActionProcessor().schedule(command);
+        }
+      }
+    }
   }
 
   public void parseCreateCmds(StringTokenizer tokens) {
