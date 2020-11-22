@@ -38,21 +38,47 @@ public class CommandParser {
 	} else {
           continue;
         }
-          
+        
+	// Handle behavioral commands
         if (keyword.equalsIgnoreCase("DO")) {
           parseDoCmds(tokens);
-        } else if (keyword.equalsIgnoreCase("Test")) {
-          System.out.println("Success!");
+
+        // Handle creational commands
+        } else if (keyword.equalsIgnoreCase("CREATE")) {
+          parseCreateCmds(tokens);
+
+	// Handle metacommands
+        } else if (keyword.startsWith("@")) {
+          parseMetaCmds(tokens);
+
+	// Handle structural commands
+        } else {
+          parseStructCmds(tokens);
         }
       }
     }
   }
 
   public void parseDoCmds(StringTokenizer tokens) {
-    if (tokens.nextToken().equalsIgnoreCase("BRAKE")) {
-       String id = tokens.nextToken();
-       Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
-       Matcher matcher = pattern.matcher(id);
+    String keyword;
+
+    if (tokens.hasMoreTokens()) {
+      keyword = tokens.nextToken();
+    } else {
+      return;
+    }
+
+    if (keyword.equalsIgnoreCase("BRAKE")) {
+      String id;
+
+      if (tokens.hasMoreTokens()) {
+        id = tokens.nextToken();
+      } else {
+        return;
+      }
+
+      Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+      Matcher matcher = pattern.matcher(id);
 
       if(matcher.find()) {
         A_Command command = new CommandBehavioralBrake(id);
@@ -60,6 +86,24 @@ public class CommandParser {
       } else {
         System.out.println("Bad ID.");
       }
+    } else if (keyword.equalsIgnoreCase("SELECT")) {
+      parseDoSelectCmds(tokens);
     }
+  }
+
+  public void parseDoSelectCmds(StringTokenizer tokens) {
+    ;
+  }
+
+  public void parseCreateCmds(StringTokenizer tokens) {
+    ;
+  }
+
+  public void parseMetaCmds(StringTokenizer tokens) {
+    ;
+  }
+  
+  public void parseStructCmds(StringTokenizer tokens) {
+    ;
   }
 }
