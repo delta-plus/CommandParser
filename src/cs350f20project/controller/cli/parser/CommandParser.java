@@ -30,104 +30,71 @@ public class CommandParser {
   public void parse() {
     if (text.length() > 0) {
       for (String cmd : text.split(";")) {
-        StringTokenizer tokens = new StringTokenizer(cmd);
-        String keyword;
-
-	if (tokens.hasMoreTokens()) {
-          keyword = tokens.nextToken();
-	} else {
-          continue;
-        }
-        
 	// Handle behavioral commands
-        if (keyword.equalsIgnoreCase("DO")) {
-          parseDoCmds(tokens);
+        if (cmd.toUpperCase().startsWith("DO ")) {
+          parseDoCmds(cmd.substring(3));
 
         // Handle creational commands
-        } else if (keyword.equalsIgnoreCase("CREATE")) {
-          parseCreateCmds(tokens);
+        } else if (cmd.toUpperCase().startsWith("CREATE ")) {
+          parseCreateCmds(cmd.substring(7));
 
 	// Handle metacommands
-        } else if (keyword.startsWith("@")) {
-          parseMetaCmds(tokens);
+        } else if (cmd.startsWith("@")) {
+          parseMetaCmds(cmd);
 
 	// Handle structural commands
         } else {
-          parseStructCmds(tokens);
+          parseStructCmds(cmd);
         }
       }
     }
   }
 
-  public void parseDoCmds(StringTokenizer tokens) {
-    String keyword;
+  public void parseDoCmds(String cmd) {
     String id;
+    // Matches ID with nothing after it.
+    Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+    Matcher matcher;
 
-    if (tokens.hasMoreTokens()) {
-      keyword = tokens.nextToken();
-    } else {
-      return;
-    }
+    if (cmd.toUpperCase().startsWith("BRAKE ")) {
+      id = cmd.substring(6);
+      matcher = pattern.matcher(id);
 
-    if (keyword.equalsIgnoreCase("BRAKE")) {
-      if (tokens.hasMoreTokens()) {
-        id = tokens.nextToken();
-      } else {
-        return;
-      }
-
-      Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
-      Matcher matcher = pattern.matcher(id);
-
-      if(matcher.find()) {
+      if (matcher.find()) {
         A_Command command = new CommandBehavioralBrake(id);
         parserHelper.getActionProcessor().schedule(command);
       } else {
         System.out.println("Bad ID.");
       }
-    } else if (keyword.equalsIgnoreCase("SELECT")) {
-      parseDoSelectCmds(tokens);
+    } else if (cmd.toUpperCase().startsWith("SELECT ")) {
+      parseDoSelectCmds(cmd.substring(7));
     }
   }
 
-  public void parseDoSelectCmds(StringTokenizer tokens) {
-    String keyword;
+  public void parseDoSelectCmds(String cmd) {
     String id;
+    Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+    Matcher matcher;
 
-    if (tokens.hasMoreTokens()) {
-      keyword = tokens.nextToken();
-    } else {
-      return;
-    }
-
-    if (keyword.equalsIgnoreCase("SWITCH")) {
-      if (tokens.hasMoreTokens()) {
-        id = tokens.nextToken();
-      } else {
-        return;
-      }
-
-      Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
-      Matcher matcher = pattern.matcher(id);
+    if (cmd.toUpperCase().startsWith("SWITCH ")) {
+      cmd = cmd.substring(7);
+      id = cmd.substring(0, cmd.indexOf(" "));
+      matcher = pattern.matcher(id);
 
       if(!matcher.find()) {
         System.out.println("Bad ID.");
 	return;
       }
 
-      if (tokens.hasMoreTokens() && tokens.nextToken().equalsIgnoreCase("PATH")) {
-        String switchType;
+      cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
-        if (tokens.hasMoreTokens()) {
-	  switchType =  tokens.nextToken();
-        } else {
-          return;
-        }
+      if (cmd.toUpperCase().startsWith("PATH ")) {
+        cmd = cmd.substring(5);
 
-        if (switchType.equalsIgnoreCase("PRIMARY")) {
+        if (cmd.toUpperCase().endsWith("PRIMARY")) {
           A_Command command = new CommandBehavioralSelectSwitch(id, true);
           parserHelper.getActionProcessor().schedule(command);
-	} else if (switchType.equalsIgnoreCase("SECONDARY")) {
+	} else if (cmd.toUpperCase().endsWith("SECONDARY")) {
           A_Command command = new CommandBehavioralSelectSwitch(id, false);
           parserHelper.getActionProcessor().schedule(command);
         }
@@ -135,15 +102,79 @@ public class CommandParser {
     }
   }
 
-  public void parseCreateCmds(StringTokenizer tokens) {
+  public void parseCreateCmds(String cmd) {
+    if (cmd.toUpperCase().startsWith("POWER ")) {
+      parseCreatePowerCmds(cmd.substring(6));
+    }
+  }
+
+  public void parseCreatePowerCmds(String cmd) {
+    String id;
+    List<String> ids = new ArrayList<String>();
+    Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+    Matcher matcher;
+
     ;
   }
 
-  public void parseMetaCmds(StringTokenizer tokens) {
+  public void parseMetaCmds(String cmd) {
     ;
   }
-  
-  public void parseStructCmds(StringTokenizer tokens) {
+
+  public void parseStructCmds(String cmd) {
     ;
+  }
+
+  public int parseInteger(String str) {
+    Pattern pattern = Pattern.compile("^[+-]{0,1}\\d+$");
+    Matcher matcher = pattern.matcher(str);
+
+    if (matcher.find()) {
+      return Integer.parseInt(str);
+    } else {
+      throw new IllegalArgumentException("Bad integer.");
+    }
+  }
+
+  public double parseReal(String str) {
+    Pattern pattern = Pattern.compile("^[+-]{0,1}0+\\d*\\.\\d+$");
+    Matcher matcher = pattern.matcher(str);
+
+    if (matcher.find()) {
+      return Double.parseDouble(str);
+    } else {
+      throw new IllegalArgumentException("Bad real.");
+    }
+  }
+
+  public double parseNumber(String str) {
+    try {
+      return parseInteger(str);
+    } catch(Exception e) {
+      try {
+        return parseReal(str);
+      } catch(Exception e2) {
+        throw new IllegalArgumentException("Bad number.");
+      }
+    }
+  }
+
+  public List<Double> parseLatOrLong(String str) {
+    List<Double> result = new ArrayList<Double>();
+
+    try {
+      result.add(Double.valueOf(parseInteger(str.substring(0, str.indexOf("*")))));
+      result.add(Double.valueOf(parseInteger(str.substring(str.indexOf("*") + 1, str.indexOf("'")))));
+      result.add(parseNumber(str.substring(str.indexOf("'") + 1, str.indexOf("\""))));
+
+      return result;
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Bad latitude or longitude.");
+    }
+  }
+
+  public boolean checkId(String id) {
+    // Will add later.
+    return true;
   }
 }
