@@ -71,6 +71,8 @@ public class CommandParser {
       }
     } else if (cmd.toUpperCase().startsWith("SELECT ")) {
       parseDoSelectCmds(cmd.substring(7));
+    } else if (cmd.toUpperCase().startsWith("SET ")) {
+      parseDoSetCmds(cmd.substring(4));
     }
   }
 
@@ -100,6 +102,59 @@ public class CommandParser {
 	} else if (cmd.toUpperCase().endsWith("SECONDARY")) {
           A_Command command = new CommandBehavioralSelectSwitch(id, false);
           parserHelper.getActionProcessor().schedule(command);
+        }
+      }
+    }
+  }
+
+  public void parseDoSetCmds(String cmd) {
+    String id;
+    Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+    Matcher matcher;
+
+    if (cmd.toUpperCase().startsWith("REFERENCE ")) {
+      cmd = cmd.substring(10);
+      if (cmd.toUpperCase().startsWith("ENGINE ")) {
+         cmd = cmd.substring(7);
+         id = cmd;
+         matcher = pattern.matcher(id);
+
+         if (matcher.find()) {
+           A_Command command = new CommandBehavioralSetReference(id);
+           parserHelper.getActionProcessor().schedule(command);
+         } else {
+           System.out.println("Bad ID.");
+         }
+      }
+    } else {
+      id = cmd.substring(0, cmd.indexOf(" "));
+      cmd = cmd.substring(id.length() + 1);
+      matcher = pattern.matcher(id);
+
+      if (!matcher.find()) {
+        System.out.println("Bad ID.");
+        return;
+      }
+
+      if (cmd.toUpperCase().startsWith("DIRECTION ")) {
+        cmd = cmd.substring(10);
+
+        if (cmd.toUpperCase().endsWith("FORWARD")) {
+          A_Command command = new CommandBehavioralSetDirection(id, true);
+          parserHelper.getActionProcessor().schedule(command);
+        } else if (cmd.toUpperCase().endsWith("BACKWARD")) {
+          A_Command command = new CommandBehavioralSetDirection(id, false);
+          parserHelper.getActionProcessor().schedule(command);
+        }
+      } else if (cmd.toUpperCase().startsWith("SPEED ")) {
+        cmd = cmd.substring(6);
+        String number = cmd;
+        matcher = pattern.matcher(id);
+        if (matcher.find()) {
+          A_Command command = new CommandBehavioralSetSpeed(id, Double.parseDouble(number));
+          parserHelper.getActionProcessor().schedule(command);
+        } else {
+          System.out.println("Bad ID");
         }
       }
     }
