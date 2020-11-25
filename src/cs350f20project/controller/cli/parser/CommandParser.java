@@ -30,6 +30,9 @@ public class CommandParser {
   public void parse() {
     if (text.length() > 0) {
       for (String cmd : text.split(";")) {
+        // Replace all whitespace with single space for easier parsing
+        cmd.replaceAll("\\s+", " ").trim();
+
 	// Handle behavioral commands
         if (cmd.toUpperCase().startsWith("DO ")) {
           parseDoCmds(cmd.substring(3));
@@ -110,11 +113,143 @@ public class CommandParser {
 
   public void parseCreatePowerCmds(String cmd) {
     String id;
+    StringTokenizer potentialIds;
     List<String> ids = new ArrayList<String>();
+    List<Double> latitude = new ArrayList<Double>();
+    List<Double> longitude = new ArrayList<Double>();
+    double deltaNum1;
+    double deltaNum2;
     Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
     Matcher matcher;
 
-    ;
+    if (cmd.toUpperCase().startsWith("CATENARY ")) {
+      cmd = cmd.substring(9);
+      id = cmd.substring(0, cmd.indexOf(" "));
+      matcher = pattern.matcher(id);
+
+      if(!matcher.find()) {
+        System.out.println("Bad ID.");
+	return;
+      }
+
+      cmd = cmd.substring(cmd.indexOf(" ") + 1);
+
+      if (cmd.toUpperCase().startsWith("WITH POLES ")) {
+        cmd = cmd.substring(11);
+        potentialIds = new StringTokenizer(cmd);
+
+	while (potentialIds.hasMoreTokens()) {
+          id = potentialIds.nextToken();
+          matcher = pattern.matcher(id);
+
+	  if (matcher.find()) {
+            ids.add(id);
+          }
+        }
+
+	if (ids.size() > 0) {
+          A_Command command = new CommandCreatePowerCatenary(id, ids);
+          parserHelper.getActionProcessor().schedule(command);         
+        } else {
+          System.out.println("Bad ID.");
+	  return;
+        }
+      }
+    } else if (cmd.toUpperCase().startsWith("STATION ")) {
+      cmd = cmd.substring(8);
+      id = cmd.substring(0, cmd.indexOf(" "));
+      matcher = pattern.matcher(id);
+
+      if(!matcher.find()) {
+        System.out.println("Bad ID.");
+	return;
+      }
+
+      cmd = cmd.substring(cmd.indexOf(" ") + 1);
+
+      if (cmd.toUpperCase().startsWith("REFERENCE ")) {
+        cmd = cmd.substring(10);
+
+	if (cmd.startsWith("$")) {
+          ; // Need to add code to for setting, checking, and retrieving IDs
+        } else {
+          latitude = parseLatOrLong(cmd.substring(0, cmd.indexOf("\"")).replaceAll("\\s+", ""));
+          longitude = parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1)).replaceAll("\\s+", ""));
+        }
+
+	cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
+
+	if (cmd.toUpperCase().startsWith("DELTA ")) {
+          cmd = cmd.substring(6);
+
+          deltaNum1 = parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
+          deltaNum2 = parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.toUpperCase().indexOf("WITH")).trim());
+
+	  cmd = cmd.substring(cmd.toUpperCase().indexOf("WITH "));
+	  cmd = cmd.substring(5);
+
+	  if (cmd.toUpperCase().startsWith("SUBSTATION ")) {
+            cmd = cmd.substring(11);
+
+            potentialIds = new StringTokenizer(cmd);
+
+	    while (potentialIds.hasMoreTokens()) {
+              id = potentialIds.nextToken();
+              matcher = pattern.matcher(id);
+
+	      if (matcher.find()) {
+                ids.add(id);
+              }
+            }
+
+	    if (ids.size() > 0) {
+              A_Command command = new CommandCreatePowerStation(id, 
+			            new CoordinatesWorld(
+			              new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)), 
+			              new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2))), 
+				    new CoordinatesDelta(deltaNum1, deltaNum2), 
+				    ids);
+              parserHelper.getActionProcessor().schedule(command);         
+            } else {
+              System.out.println("Bad ID.");
+	      return;
+            }
+          } else if (cmd.toUpperCase().startsWith("SUBSTATIONS ")) {
+            cmd = cmd.substring(12);
+
+            potentialIds = new StringTokenizer(cmd);
+
+	    while (potentialIds.hasMoreTokens()) {
+              id = potentialIds.nextToken();
+              matcher = pattern.matcher(id);
+
+	      if (matcher.find()) {
+                ids.add(id);
+              }
+            }
+
+	    if (ids.size() > 0) {
+              A_Command command = new CommandCreatePowerStation(id, 
+			            new CoordinatesWorld(
+			              new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)), 
+			              new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2))), 
+				    new CoordinatesDelta(deltaNum1, deltaNum2), 
+				    ids);
+              parserHelper.getActionProcessor().schedule(command);         
+            } else {
+              System.out.println("Bad ID.");
+	      return;
+            }
+          } else {
+            System.out.println("Bad command.");
+	    return;
+          }
+        } else {
+          System.out.println("Bad command.");
+	  return;
+        }
+      }
+    }
   }
 
   public void parseMetaCmds(String cmd) {
@@ -149,7 +284,7 @@ public class CommandParser {
 
   public double parseNumber(String str) {
     try {
-      return parseInteger(str);
+      return Double.valueOf(parseInteger(str));
     } catch(Exception e) {
       try {
         return parseReal(str);
