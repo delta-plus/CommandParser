@@ -20,8 +20,13 @@ import java.util.regex.Pattern;
 import cs350f20project.controller.cli.parser.HelperMethods;
 
 public class StructuralParser {
+  private A_ParserHelper parserHelper;
 
-  public static void parseStructCmds(String cmd) {
+  public StructuralParser(MyParserHelper parserHelper) {
+    this.parserHelper = parserHelper;
+  }
+
+  public void parseStructCmds(String cmd) {
     ;
   }
 }

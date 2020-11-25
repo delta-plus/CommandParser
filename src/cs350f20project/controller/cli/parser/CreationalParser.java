@@ -20,14 +20,19 @@ import java.util.regex.Pattern;
 import cs350f20project.controller.cli.parser.HelperMethods;
 
 public class CreationalParser {
+  private A_ParserHelper parserHelper;
 
-  public static void parseCreateCmds(String cmd, A_ParserHelper parserHelper) {
+  public CreationalParser(MyParserHelper parserHelper) {
+    this.parserHelper = parserHelper;
+  }
+
+  public void parseCreateCmds(String cmd) {
     if (cmd.toUpperCase().startsWith("POWER ")) {
-      parseCreatePowerCmds(cmd.substring(6), parserHelper);
+      parseCreatePowerCmds(cmd.substring(6));
     }
   }
 
-  private static void parseCreatePowerCmds(String cmd, A_ParserHelper parserHelper) {
+  private void parseCreatePowerCmds(String cmd) {
     String id;
     StringTokenizer potentialIds;
     List<String> ids = new ArrayList<String>();
@@ -35,7 +40,7 @@ public class CreationalParser {
     List<Double> longitude = new ArrayList<Double>();
     double deltaNum1;
     double deltaNum2;
-    Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+    Pattern pattern = Pattern.compile("^[_a-zA-Z]+\\w*$");
     Matcher matcher;
 
     if (cmd.toUpperCase().startsWith("CATENARY ")) {

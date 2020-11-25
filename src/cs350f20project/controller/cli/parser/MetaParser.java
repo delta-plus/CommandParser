@@ -20,8 +20,13 @@ import java.util.regex.Pattern;
 import cs350f20project.controller.cli.parser.HelperMethods;
 
 public class MetaParser {
+  private A_ParserHelper parserHelper;
 
-  public static void parseMetaCmds(String cmd) {
-    HelperMethods.parseNumber(cmd);
+  public MetaParser(MyParserHelper parserHelper) {
+    this.parserHelper = parserHelper;
+  }
+
+  public void parseMetaCmds(String cmd) {
+    ;
   }
 }

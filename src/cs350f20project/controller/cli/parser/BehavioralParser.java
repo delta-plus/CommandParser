@@ -20,11 +20,16 @@ import java.util.regex.Pattern;
 import cs350f20project.controller.cli.parser.HelperMethods;
 
 public class BehavioralParser {
+  private A_ParserHelper parserHelper;
 
-  public static void parseDoCmds(String cmd, A_ParserHelper parserHelper) {
+  public BehavioralParser(MyParserHelper parserHelper) {
+    this.parserHelper = parserHelper;
+  }
+
+  public void parseDoCmds(String cmd) {
     String id;
     // Matches ID with nothing after it.
-    Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+    Pattern pattern = Pattern.compile("^[_a-zA-Z]+\\w*$");
     Matcher matcher;
 
     if (cmd.toUpperCase().startsWith("BRAKE ")) {
@@ -38,13 +43,13 @@ public class BehavioralParser {
         System.out.println("Bad ID.");
       }
     } else if (cmd.toUpperCase().startsWith("SELECT ")) {
-      parseDoSelectCmds(cmd.substring(7), parserHelper);
+      parseDoSelectCmds(cmd.substring(7));
     } else if (cmd.toUpperCase().startsWith("SET ")) {
-      parseDoSetCmds(cmd.substring(4), parserHelper);
+      parseDoSetCmds(cmd.substring(4));
     }
   }
 
-  private static void parseDoSelectCmds(String cmd, A_ParserHelper parserHelper) {
+  private void parseDoSelectCmds(String cmd) {
     String id;
     Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
     Matcher matcher;
@@ -75,7 +80,7 @@ public class BehavioralParser {
     }
   }
 
-  private static void parseDoSetCmds(String cmd, A_ParserHelper parserHelper) {
+  private void parseDoSetCmds(String cmd) {
     String id;
     Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
     Matcher matcher;

@@ -24,12 +24,19 @@ import cs350f20project.controller.cli.parser.MetaParser;
 
 public class CommandParser {
   private A_ParserHelper parserHelper;
-  private ActionProcessor actionProcessor;
   private String text;
+  private BehavioralParser behavioralParser;
+  private CreationalParser creationalParser;
+  private StructuralParser structuralParser;
+  private MetaParser metaParser;
 
   public CommandParser(MyParserHelper parserHelper, String text) {
     this.parserHelper = parserHelper;
     this.text = text;
+    this.behavioralParser = new BehavioralParser(parserHelper);
+    this.creationalParser = new CreationalParser(parserHelper);
+    this.structuralParser = new StructuralParser(parserHelper);
+    this.metaParser = new MetaParser(parserHelper);
   }
 
   public void parse() {
@@ -40,19 +47,19 @@ public class CommandParser {
 
 	// Handle behavioral commands
         if (cmd.toUpperCase().startsWith("DO ")) {
-          BehavioralParser.parseDoCmds(cmd.substring(3), parserHelper);
+          behavioralParser.parseDoCmds(cmd.substring(3));
 
         // Handle creational commands
         } else if (cmd.toUpperCase().startsWith("CREATE ")) {
-          CreationalParser.parseCreateCmds(cmd.substring(7), parserHelper);
+          creationalParser.parseCreateCmds(cmd.substring(7));
 
 	// Handle metacommands
         } else if (cmd.startsWith("@")) {
-          MetaParser.parseMetaCmds(cmd);
+          metaParser.parseMetaCmds(cmd);
 
 	// Handle structural commands
         } else {
-          StructuralParser.parseStructCmds(cmd);
+          structuralParser.parseStructCmds(cmd);
         }
       }
     }
