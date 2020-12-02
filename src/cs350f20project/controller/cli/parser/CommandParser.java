@@ -43,7 +43,7 @@ public class CommandParser {
     if (text.length() > 0) {
       for (String cmd : text.split(";")) {
         // Replace all whitespace with single space for easier parsing
-        cmd.replaceAll("\\s+", " ").trim();
+        cmd = cmd.replaceAll("\\s+", " ").trim();
 
 	// Handle behavioral commands
         if (cmd.toUpperCase().startsWith("DO ")) {

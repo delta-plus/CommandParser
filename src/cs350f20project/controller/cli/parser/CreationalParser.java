@@ -29,6 +29,8 @@ public class CreationalParser {
   public void parseCreateCmds(String cmd) {
     if (cmd.toUpperCase().startsWith("POWER ")) {
       parseCreatePowerCmds(cmd.substring(6));
+    } else if (cmd.toUpperCase().startsWith("STOCK ")) {
+      parseCreateStockCmds(cmd.substring(6));
     }
   }
 
@@ -48,7 +50,7 @@ public class CreationalParser {
       id = cmd.substring(0, cmd.indexOf(" "));
       matcher = pattern.matcher(id);
 
-      if(!matcher.find()) {
+      if (!matcher.find()) {
         System.out.println("Bad ID.");
 	return;
       }
@@ -65,12 +67,15 @@ public class CreationalParser {
 
 	  if (matcher.find()) {
             ids.add(id);
+          } else {
+            System.out.println("Bad ID.");
+	    return;
           }
         }
 
 	if (ids.size() > 0) {
           A_Command command = new CommandCreatePowerCatenary(id, ids);
-          parserHelper.getActionProcessor().schedule(command);         
+          parserHelper.getActionProcessor().schedule(command);
         } else {
           System.out.println("Bad ID.");
 	  return;
@@ -81,7 +86,7 @@ public class CreationalParser {
       id = cmd.substring(0, cmd.indexOf(" "));
       matcher = pattern.matcher(id);
 
-      if(!matcher.find()) {
+      if (!matcher.find()) {
         System.out.println("Bad ID.");
 	return;
       }
@@ -94,8 +99,8 @@ public class CreationalParser {
 	if (cmd.startsWith("$")) {
           ; // Need to add code to for setting, checking, and retrieving IDs
         } else {
-          latitude = HelperMethods.parseLatOrLong(cmd.substring(0, cmd.indexOf("\"")).replaceAll("\\s+", ""));
-          longitude = HelperMethods.parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1)).replaceAll("\\s+", ""));
+          latitude = HelperMethods.parseLatOrLong(cmd.substring(0, cmd.indexOf("\"") + 1).replaceAll("\\s+", ""));
+          longitude = HelperMethods.parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 1).replaceAll("\\s+", ""));
         }
 
 	cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
@@ -120,6 +125,9 @@ public class CreationalParser {
 
 	      if (matcher.find()) {
                 ids.add(id);
+              } else {
+                System.out.println("Bad ID.");
+	        return;
               }
             }
 
@@ -146,6 +154,9 @@ public class CreationalParser {
 
 	      if (matcher.find()) {
                 ids.add(id);
+              } else {
+                System.out.println("Bad ID.");
+                return;
               }
             }
 
@@ -169,6 +180,87 @@ public class CreationalParser {
           System.out.println("Bad command.");
 	  return;
         }
+      }
+    }
+  }
+
+  private void parseCreateStockCmds(String cmd) {
+    String id;
+    String id2;
+    double distance;
+    Pattern pattern = Pattern.compile("^[_a-zA-Z]+\\w*$");
+    Matcher matcher;
+
+    if (cmd.toUpperCase().startsWith("CAR ")) {
+      cmd = cmd.substring(4);
+      id = cmd.substring(0, cmd.indexOf(" "));
+      matcher = pattern.matcher(id);
+
+      if (!matcher.find()) {
+        System.out.println("Bad ID.");
+	return;
+      }
+
+      cmd = cmd.substring(cmd.indexOf(" ") + 1);
+
+      if (cmd.toUpperCase().endsWith("AS BOX")) {
+        A_Command command = new CommandCreateStockCarBox(id);
+        parserHelper.getActionProcessor().schedule(command);
+      } else if (cmd.toUpperCase().endsWith("AS CABOOSE")) {
+        A_Command command = new CommandCreateStockCarCaboose(id);
+        parserHelper.getActionProcessor().schedule(command);
+      } else {
+        System.out.println("Bad command near: " + cmd);
+      }
+    } else if (cmd.toUpperCase().startsWith("ENGINE ")) {
+      cmd = cmd.substring(7);
+      id = cmd.substring(0, cmd.indexOf(" "));
+      matcher = pattern.matcher(id);
+
+      if (!matcher.find()) {
+        System.out.println("Bad ID.");
+	return;
+      }
+
+      cmd = cmd.substring(cmd.indexOf(" ") + 1);
+
+      if (cmd.toUpperCase().startsWith("AS DIESEL ON TRACK ")) {
+        cmd = cmd.substring(19);
+        id2 = cmd.substring(0, cmd.indexOf(" "));
+        matcher = pattern.matcher(id2);
+  
+        if (!matcher.find()) {
+          System.out.println("Bad ID.");
+  	return;
+        }
+  
+        cmd = cmd.substring(cmd.indexOf(" ") + 1);
+
+	if (cmd.toUpperCase().startsWith("DISTANCE ")) {
+          cmd = cmd.substring(9);
+	  distance = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(" ")));
+	  cmd = cmd.substring(cmd.indexOf(" ") + 1);
+
+	  if (cmd.toUpperCase().endsWith("FROM START FACING START")) {
+            A_Command command = new CommandCreateStockEngineDiesel(id, new TrackLocator(id2, distance, true), true);
+            parserHelper.getActionProcessor().schedule(command);
+          } else if (cmd.toUpperCase().endsWith("FROM START FACING END")) {
+            A_Command command = new CommandCreateStockEngineDiesel(id, new TrackLocator(id2, distance, true), false);
+            parserHelper.getActionProcessor().schedule(command);
+          } else if (cmd.toUpperCase().endsWith("FROM END FACING START")) {
+            A_Command command = new CommandCreateStockEngineDiesel(id, new TrackLocator(id2, distance, false), true);
+            parserHelper.getActionProcessor().schedule(command);
+          } else if (cmd.toUpperCase().endsWith("FROM END FACING END")) {
+            A_Command command = new CommandCreateStockEngineDiesel(id, new TrackLocator(id2, distance, false), false);
+            parserHelper.getActionProcessor().schedule(command);
+          } else {
+            System.out.println("Bad command near: " + cmd);
+          }
+        } else {
+          System.out.println("Bad command near: " + cmd);
+        }
+      } else {
+        System.out.println("Bad command near: " + cmd);
       }
     }
   }

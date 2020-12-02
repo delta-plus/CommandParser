@@ -63,7 +63,7 @@ public class HelperMethods {
 
       return result;
     } catch(Exception e) {
-      throw new IllegalArgumentException("Bad latitude or longitude.");
+      throw new IllegalArgumentException("Bad latitude or longitude: " + e);
     }
   }
 
