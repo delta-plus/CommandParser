@@ -54,7 +54,7 @@ public class CommandParser {
           creationalParser.parseCreateCmds(cmd.substring(7));
 
 	// Handle metacommands
-        } else if (cmd.startsWith("@")) {
+        } else if (cmd.startsWith("@") || cmd.toUpperCase().startsWith("OPEN ")) {
           metaParser.parseMetaCmds(cmd);
 
 	// Handle structural commands
