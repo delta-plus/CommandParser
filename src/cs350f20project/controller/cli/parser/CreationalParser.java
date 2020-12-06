@@ -978,7 +978,7 @@ public class CreationalParser {
 
                     try {
                         deltaNum1 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
-                        deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1).trim());
+                        deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
                         deltaCoords2 = new CoordinatesDelta(deltaNum1, deltaNum2);
                     } catch (Exception e) {
                         System.out.println(e);
@@ -1016,7 +1016,7 @@ public class CreationalParser {
 
                             try {
                                 deltaNum1 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
-                                deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1).trim());
+                                deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
                                 deltaCoords4 = new CoordinatesDelta(deltaNum1, deltaNum2);
                             } catch (Exception e) {
                                 System.out.println(e);
@@ -1029,16 +1029,18 @@ public class CreationalParser {
                                 cmd = cmd.substring(16);
 
                                 try {
-                                    distance2 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(" ")));
+                                    distance2 = HelperMethods.parseNumber(cmd);
                                 } catch (Exception e) {
                                     System.out.println(e);
                                     return;
                                 }
 
-                                A_Command command = new CommandCreateTrackSwitchWye(id, worldCoords, deltaCoords1, deltaCoords2, new CoordinatesDelta(distance1, 1.0),
-                                        deltaCoords3, deltaCoords4, new CoordinatesDelta(1.0, distance2));
+                                A_Command command = new CommandCreateTrackSwitchWye(id, worldCoords, deltaCoords1, deltaCoords2, 
+						                                    ShapeArc.calculateDeltaOrigin(worldCoords, deltaCoords1, deltaCoords2, distance1),
+                                                                                    deltaCoords3, deltaCoords4, 
+										    ShapeArc.calculateDeltaOrigin(worldCoords, deltaCoords3, deltaCoords4, distance2)
+										   );
                                 parserHelper.getActionProcessor().schedule(command);
-                                System.out.println("DEBUG: Got track switch wye!");
                             } else {
                                 System.out.println("Bad command near: " + cmd);
                             }
