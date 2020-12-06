@@ -104,7 +104,10 @@ public class MetaParser {
                 A_Command command = new CommandMetaViewGenerate(id1, cord, int1, screen);
                 parserHelper.getActionProcessor().schedule(command);
               } else {
-                //Still figuring out the id2
+                cord = parserHelper.getReference(id2);
+                screen = new CoordinatesScreen(int2, int3);
+                A_Command command = new CommandMetaViewGenerate(id1, cord, int1, screen);
+                parserHelper.getActionProcessor().schedule(command);
               }
 
             }

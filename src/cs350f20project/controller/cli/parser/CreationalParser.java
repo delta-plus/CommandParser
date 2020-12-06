@@ -40,7 +40,7 @@ public class CreationalParser {
     }
 
     private void parseCreatePowerCmds(String cmd) {
-        String id, id2;
+        String id, id2 = "";
         double number;
         StringTokenizer potentialIds;
         List<String> ids = new ArrayList<String>();
@@ -263,13 +263,19 @@ public class CreationalParser {
                 cmd = cmd.substring(10);
 
                 if (cmd.startsWith("$")) {
-                    ; // Need to add code to for setting, checking, and retrieving IDs
+                    id2 = cmd.substring(1, cmd.indexOf(" "));
+                    matcher = pattern.matcher(id2);
+
+                    if (!matcher.find()) {
+                        System.out.println("Bad ID.");
+                        return;
+                    }
+                    cmd = cmd.substring(cmd.indexOf(" ")+1);
                 } else {
                     latitude = HelperMethods.parseLatOrLong(cmd.substring(0, cmd.indexOf("\"") + 1).replaceAll("\\s+", ""));
                     longitude = HelperMethods.parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 1).replaceAll("\\s+", ""));
+                    cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
                 }
-
-                cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
 
                 if (cmd.toUpperCase().startsWith("DELTA ")) {
                     cmd = cmd.substring(6);
@@ -297,7 +303,7 @@ public class CreationalParser {
                             }
                         }
 
-                        if (ids.size() > 0) {
+                        if (ids.size() > 0 && id2.isEmpty()) {
                             A_Command command = new CommandCreatePowerSubstation(id,
                                     new CoordinatesWorld(
                                             new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)),
@@ -306,8 +312,10 @@ public class CreationalParser {
                                     ids);
                             parserHelper.getActionProcessor().schedule(command);
                         } else {
-                            System.out.println("Bad ID.");
-                            return;
+                            CoordinatesWorld worldCords;
+                            worldCords = parserHelper.getReference(id2);
+                            A_Command command = new CommandCreatePowerSubstation(id,worldCords, new CoordinatesDelta(deltaNum1,deltaNum2), ids);
+                            parserHelper.getActionProcessor().schedule(command);
                         }
                     } else {
                         System.out.println("Bad command.");
@@ -413,9 +421,12 @@ public class CreationalParser {
 
     private void parseCreateTrackCmds(String cmd) {
         String id;
-        String id2;
+        String id2 = "";
         double distance1;
         double distance2;
+        Angle angle1, angle2, angle3;
+        int int1;
+        ShapeArc arc1;
         StringTokenizer potentialIds;
         List<String> ids = new ArrayList<String>();
         List<Double> latitude = new ArrayList<Double>();
@@ -430,9 +441,118 @@ public class CreationalParser {
         Pattern pattern = Pattern.compile("^[_a-zA-Z]+\\w*$");
         Matcher matcher;
 
-        if (cmd.toUpperCase().startsWith("CURVE REFERENCE ")) {
+        if (cmd.toUpperCase().startsWith("CURVE ")) {
             // COMMAND 43
-            //cmd = cmd.substring(16);
+            cmd = cmd.substring(6);
+            id = cmd.substring(0, cmd.indexOf(" "));
+            matcher = pattern.matcher(id);
+
+            if (!matcher.find()) {
+                System.out.println("Bad ID.");
+                return;
+            }
+
+            cmd = cmd.substring(cmd.indexOf(" ")+1);
+
+            if(cmd.toUpperCase().startsWith("REFERENCE ")){
+                cmd = cmd.substring(10);
+
+                if (cmd.startsWith("$")) {
+                    id2 = cmd.substring(1, cmd.indexOf(" "));
+                    matcher = pattern.matcher(id2);
+
+                    if (!matcher.find()) {
+                        System.out.println("Bad ID.");
+                        return;
+                    }
+                    cmd = cmd.substring(cmd.indexOf(" ")+1);
+                } else {
+                    latitude = HelperMethods.parseLatOrLong(cmd.substring(0, cmd.indexOf("\"") + 1).replaceAll("\\s+", ""));
+                    longitude = HelperMethods.parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 1).replaceAll("\\s+", ""));
+                    worldCoords = new CoordinatesWorld(
+                            new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)),
+                            new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2))
+                    );
+                    cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
+                }
+
+
+
+                if(cmd.toUpperCase().startsWith("DELTA START ")){
+                    cmd = cmd.substring(12);
+
+                    try {
+                        deltaNum1 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
+                        deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.toUpperCase().indexOf("END")).trim());
+                        deltaCoords1 = new CoordinatesDelta(deltaNum1, deltaNum2);
+                    } catch (Exception e) {
+                        System.out.println(e);
+                        return;
+                    }
+
+                    cmd = cmd.substring(cmd.toUpperCase().indexOf("END "));
+                    cmd = cmd.substring(4);
+
+                    try {
+                        deltaNum1 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
+                        deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
+                        deltaCoords2 = new CoordinatesDelta(deltaNum1, deltaNum2);
+                    } catch (Exception e) {
+                        System.out.println(e);
+                        return;
+                    }
+
+                    cmd = cmd.substring(cmd.indexOf(" ") + 1);
+
+                    if(cmd.toUpperCase().startsWith("DISTANCE ORIGIN ")){
+                        cmd = cmd.substring(16);
+
+                        try {
+                            distance1 = HelperMethods.parseNumber(cmd);
+                        } catch (Exception e) {
+                            System.out.println(e);
+                            return;
+                        }
+                        if(id2.isEmpty()){
+                            A_Command command = new CommandCreateTrackCurve(id, worldCoords, deltaCoords1, deltaCoords2, distance1);
+                            parserHelper.getActionProcessor().schedule(command);
+                        } else {
+                            worldCoords = parserHelper.getReference(id2);
+                            A_Command command = new CommandCreateTrackCurve(id, worldCoords, deltaCoords1, deltaCoords2, distance1);
+                            parserHelper.getActionProcessor().schedule(command);
+                        }
+
+
+                    } else if (cmd.toUpperCase().startsWith("ORIGIN ")){
+                        cmd = cmd.substring(7);
+
+                        try {
+                            deltaNum1 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
+                            deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1));
+                            deltaCoords3 = new CoordinatesDelta(deltaNum1, deltaNum2);
+                        } catch (Exception e) {
+                            System.out.println(e);
+                            return;
+                        }
+
+                        if(id2.isEmpty()){
+                            A_Command command = new CommandCreateTrackCurve(id, worldCoords, deltaCoords1, deltaCoords2, deltaCoords3);
+                            parserHelper.getActionProcessor().schedule(command);
+                        }
+                        worldCoords = parserHelper.getReference(id2);
+                        A_Command command = new CommandCreateTrackCurve(id, worldCoords, deltaCoords1, deltaCoords2, deltaCoords3);
+                        parserHelper.getActionProcessor().schedule(command);
+                    } else {
+                        System.out.println("Bad command near: " + cmd);
+                    }
+                } else {
+                    System.out.println("Bad command near: " + cmd);
+                }
+
+            } else {
+                System.out.println("Bad command near: " + cmd);
+            }
+
 
         } else if (cmd.toUpperCase().startsWith("LAYOUT ")) {
             // COMMAND 45
@@ -473,6 +593,160 @@ public class CreationalParser {
             } else {
                 System.out.println("Bad command near: " + cmd);
             }
+        } else if(cmd.toUpperCase().startsWith("ROUNDHOUSE ")){
+            // COMMAND 46
+
+            cmd = cmd.substring(11);
+            id = cmd.substring(0, cmd.indexOf(" "));
+            matcher = pattern.matcher(id);
+
+            if (!matcher.find()) {
+                System.out.println("Bad ID.");
+                return;
+            }
+
+            cmd = cmd.substring(cmd.indexOf(" ")+1);
+
+            if(cmd.toUpperCase().startsWith("REFERENCE ")){
+                cmd = cmd.substring(10);
+
+                if (cmd.startsWith("$")) {
+                    id2 = cmd.substring(1, cmd.indexOf(" "));
+                    matcher = pattern.matcher(id2);
+
+                    if (!matcher.find()) {
+                        System.out.println("Bad ID.");
+                        return;
+                    }
+                    cmd = cmd.substring(cmd.indexOf(" ")+1);
+                } else {
+                    latitude = HelperMethods.parseLatOrLong(cmd.substring(0, cmd.indexOf("\"") + 1).replaceAll("\\s+", ""));
+                    longitude = HelperMethods.parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 1).replaceAll("\\s+", ""));
+                    worldCoords = new CoordinatesWorld(
+                            new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)),
+                            new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2))
+                    );
+                    cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
+                }
+
+                if(cmd.toUpperCase().startsWith("DELTA ORIGIN ")){
+                    cmd = cmd.substring(13);
+
+                    try {
+                        deltaNum1 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
+                        deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
+                        deltaCoords1 = new CoordinatesDelta(deltaNum1, deltaNum2);
+                    } catch (Exception e) {
+                        System.out.println(e);
+                        return;
+                    }
+
+                    cmd = cmd.substring(cmd.indexOf(" ")+1);
+
+                    if(cmd.toUpperCase().startsWith("ANGLE ENTRY ")){
+                        cmd = cmd.substring(12);
+
+                        try {
+                            angle1 = new Angle(HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(" "))));
+
+                        } catch (Exception e) {
+                            System.out.println(e);
+                            return;
+                        }
+
+                        cmd = cmd.substring(cmd.indexOf(" ")+1);
+
+                        if(cmd.toUpperCase().startsWith("START ")){
+                            cmd = cmd.substring(6);
+
+                            try {
+                                angle2 = new Angle(HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(" "))));
+                            } catch (Exception e) {
+                                System.out.println(e);
+                                return;
+                            }
+                            cmd = cmd.substring(cmd.indexOf(" ")+1);
+
+                            if(cmd.toUpperCase().startsWith("END ")){
+                                cmd = cmd.substring(4);
+
+                                try {
+                                    angle3 = new Angle(HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(" "))));
+                                } catch (Exception e) {
+                                    System.out.println(e);
+                                    return;
+                                }
+                                cmd = cmd.substring(cmd.indexOf(" ")+1);
+
+                                if(cmd.toUpperCase().startsWith("WITH ")){
+                                    cmd = cmd.substring(5);
+
+                                    try {
+                                        int1 = HelperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
+                                    } catch (Exception e) {
+                                        System.out.println(e);
+                                        return;
+                                    }
+                                    cmd = cmd.substring(cmd.indexOf(" ")+1);
+
+                                    if(cmd.toUpperCase().startsWith("SPURS LENGTH ")){
+                                        cmd = cmd.substring(13);
+
+                                        try {
+                                            distance1 = HelperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
+                                        } catch (Exception e) {
+                                            System.out.println(e);
+                                            return;
+                                        }
+                                        cmd = cmd.substring(cmd.indexOf(" ")+1);
+
+                                        if(cmd.toUpperCase().startsWith("TURNTABLE LENGTH ")){
+                                            cmd = cmd.substring(17);
+
+                                            try {
+                                                distance2 = HelperMethods.parseInteger(cmd);
+                                            } catch (Exception e) {
+                                                System.out.println(e);
+                                                return;
+                                            }
+                                            if(id2.isEmpty()){
+                                                A_Command command = new CommandCreateTrackRoundhouse(id, worldCoords, deltaCoords1, angle1, angle2, angle3, int1, distance1, distance2);
+                                                parserHelper.getActionProcessor().schedule(command);
+                                            } else {
+                                                worldCoords = parserHelper.getReference(id2);
+                                                A_Command command = new CommandCreateTrackRoundhouse(id, worldCoords, deltaCoords1, angle1, angle2, angle3, int1, distance1, distance2);
+                                                parserHelper.getActionProcessor().schedule(command);
+                                            }
+
+                                        } else {
+                                            System.out.println("Bad command near: " + cmd);
+                                        }
+                                    } else {
+                                        System.out.println("Bad command near: " + cmd);
+                                    }
+                                } else {
+                                    System.out.println("Bad command near: " + cmd);
+                                }
+                            } else {
+                                System.out.println("Bad command near: " + cmd);
+                            }
+                        } else {
+                            System.out.println("Bad command near: " + cmd);
+                        }
+
+                    } else {
+                        System.out.println("Bad command near: " + cmd);
+                    }
+
+                } else {
+                    System.out.println("Bad command near: " + cmd);
+                }
+
+            } else {
+                System.out.println("Bad command near: " + cmd);
+            }
+
+
         } else if (cmd.toUpperCase().startsWith("STRAIGHT ")) {
             // COMMAND 47
 
@@ -537,7 +811,126 @@ public class CreationalParser {
             }
         } else if (cmd.toUpperCase().startsWith("SWITCH TURNOUT ")) {
             // COMMAND 48
-            ;
+
+            cmd = cmd.substring(15);
+
+            id = cmd.substring(0, cmd.indexOf(" "));
+            matcher = pattern.matcher(id);
+
+            if (!matcher.find()) {
+                System.out.println("Bad ID.");
+                return;
+            }
+            cmd = cmd.substring(cmd.indexOf(" ")+1);
+
+            if (cmd.toUpperCase().startsWith("REFERENCE ")) {
+                cmd = cmd.substring(10);
+
+                if (cmd.startsWith("$")) {
+                    id2 = cmd.substring(1, cmd.indexOf(" "));
+                    matcher = pattern.matcher(id2);
+
+                    if (!matcher.find()) {
+                        System.out.println("Bad ID.");
+                        return;
+                    }
+                    cmd = cmd.substring(cmd.indexOf(" ")+1);
+                } else {
+                    latitude = HelperMethods.parseLatOrLong(cmd.substring(0, cmd.indexOf("\"") + 1).replaceAll("\\s+", ""));
+                    longitude = HelperMethods.parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 1).replaceAll("\\s+", ""));
+                    worldCoords = new CoordinatesWorld(
+                            new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)),
+                            new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2))
+                    );
+                    cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
+                }
+
+                if (cmd.toUpperCase().startsWith("STRAIGHT DELTA START ")) {
+                    cmd = cmd.substring(21);
+
+                    try {
+                        deltaNum1 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
+                        deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.toUpperCase().indexOf("END")).trim());
+                        deltaCoords1 = new CoordinatesDelta(deltaNum1, deltaNum2);
+                    } catch (Exception e) {
+                        System.out.println(e);
+                        return;
+                    }
+
+                    cmd = cmd.substring(cmd.toUpperCase().indexOf("END "));
+                    cmd = cmd.substring(4);
+
+                    try {
+                        deltaNum1 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
+                        deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
+                        deltaCoords2 = new CoordinatesDelta(deltaNum1, deltaNum2);
+                    } catch (Exception e) {
+                        System.out.println(e);
+                        return;
+                    }
+
+                    cmd = cmd.substring(cmd.indexOf(" ") + 1);
+
+                    if (cmd.toUpperCase().startsWith("CURVE DELTA START ")) {
+                        cmd = cmd.substring(18);
+
+                        try {
+                            deltaNum1 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
+                            deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.toUpperCase().indexOf("END")).trim());
+                            deltaCoords3 = new CoordinatesDelta(deltaNum1, deltaNum2);
+                        } catch (Exception e) {
+                            System.out.println(e);
+                            return;
+                        }
+
+                        cmd = cmd.substring(cmd.toUpperCase().indexOf("END "));
+                        cmd = cmd.substring(4);
+
+                        try {
+                            deltaNum1 = HelperMethods.parseNumber(cmd.substring(0, cmd.indexOf(":")).trim());
+                            deltaNum2 = HelperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
+                            deltaCoords4 = new CoordinatesDelta(deltaNum1, deltaNum2);
+                        } catch (Exception e) {
+                            System.out.println(e);
+                            return;
+                        }
+
+                        cmd = cmd.substring(cmd.indexOf(" ") + 1);
+
+                        if(cmd.toUpperCase().startsWith("DISTANCE ORIGIN ")){
+                            cmd = cmd.substring(16);
+
+                            try {
+                                distance1 = HelperMethods.parseInteger(cmd);
+                            } catch (Exception e) {
+                                System.out.println(e);
+                                return;
+                            }
+
+                            if(id2.isEmpty()){
+                                arc1 = new ShapeArc(worldCoords, deltaCoords3, deltaCoords4, distance1);
+                                A_Command command = new CommandCreateTrackSwitchTurnout(id, worldCoords, deltaCoords1, deltaCoords2, deltaCoords3, deltaCoords4, arc1.getDeltaOrigin());
+                                parserHelper.getActionProcessor().schedule(command);
+                            } else {
+                                worldCoords = parserHelper.getReference(id2);
+                                arc1 = new ShapeArc(worldCoords, deltaCoords3, deltaCoords4, distance1);
+                                A_Command command = new CommandCreateTrackSwitchTurnout(id, worldCoords, deltaCoords1, deltaCoords2, deltaCoords3, deltaCoords4, arc1.getDeltaOrigin());
+                                parserHelper.getActionProcessor().schedule(command);
+                            }
+
+                        } else {
+                            System.out.println("Bad command near: " + cmd);
+                        }
+                    } else {
+                        System.out.println("Bad command near: " + cmd);
+                    }
+                } else {
+                    System.out.println("Bad command near: " + cmd);
+                }
+            } else {
+                System.out.println("Bad command near: " + cmd);
+            }
+
         } else if (cmd.toUpperCase().startsWith("SWITCH WYE ")) {
             // COMMAND 49
 
