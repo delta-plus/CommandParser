@@ -42,24 +42,28 @@ public class CommandParser {
   public void parse() {
     if (text.length() > 0) {
       for (String cmd : text.split(";")) {
-        // Replace all whitespace with single space for easier parsing
-        cmd = cmd.replaceAll("\\s+", " ").trim();
+        try {
+          // Replace all whitespace with single space for easier parsing
+          cmd = cmd.replaceAll("\\s+", " ").trim();
 
-	// Handle behavioral commands
-        if (cmd.toUpperCase().startsWith("DO ")) {
-          behavioralParser.parseDoCmds(cmd.substring(3));
+          // Handle behavioral commands
+          if (cmd.toUpperCase().startsWith("DO ")) {
+            behavioralParser.parseDoCmds(cmd.substring(3));
 
-        // Handle creational commands
-        } else if (cmd.toUpperCase().startsWith("CREATE ")) {
-          creationalParser.parseCreateCmds(cmd.substring(7));
+          // Handle creational commands
+          } else if (cmd.toUpperCase().startsWith("CREATE ")) {
+            creationalParser.parseCreateCmds(cmd.substring(7));
 
-	// Handle metacommands
-        } else if (cmd.startsWith("@") || cmd.toUpperCase().startsWith("OPEN ")) {
-          metaParser.parseMetaCmds(cmd);
+          // Handle metacommands
+          } else if (cmd.startsWith("@") || cmd.toUpperCase().startsWith("OPEN ")) {
+            metaParser.parseMetaCmds(cmd);
 
-	// Handle structural commands
-        } else {
-          structuralParser.parseStructCmds(cmd);
+          // Handle structural commands
+          } else {
+            structuralParser.parseStructCmds(cmd);
+          }
+	} catch(Exception e) {
+          System.out.println("Bad command near: " + cmd);
         }
       }
     }

@@ -72,19 +72,37 @@ public class HelperMethods {
     }
   }
 
-  public void checkId(String id) {
-    // Disgusting hack to check for unique IDs
+  // Disgusting hack to check for unique IDs
+  public void checkIds(List<String> ids) {
     CoordinatesWorld fakeWorldCoords;
+    List<String> tempList;
 
     fakeWorldCoords = new CoordinatesWorld(
                       new Latitude(0, 0, 0.0),
                       new Longitude(0, 0, 0.0)
     );
 
-    if (!parserHelper.hasReference(id)) {
+    // Check against IDs in current command string
+    for (int i = 0; i < ids.size(); i++) {
+      tempList = ids;
+
+      for (int j = 0; j < tempList.size(); j++) {
+        if (ids.get(i).equals(tempList.get(j)) && i != j) {
+          throw new IllegalArgumentException("ID already exists: " + ids.get(i));
+        }
+      }
+    }
+
+    // Check against previously saved IDs
+    for (String id : ids) {
+      if (parserHelper.hasReference(id)) {
+        throw new IllegalArgumentException("ID already exists: " + id);
+      }
+    }
+
+    // Only save IDs if all are good.
+    for (String id : ids) {
       parserHelper.addReference(id, fakeWorldCoords);
-    } else {
-      throw new IllegalArgumentException("ID already exists.");
     }
   }
 }

@@ -48,6 +48,8 @@ public class BehavioralParser {
       parseDoSelectCmds(cmd.substring(7));
     } else if (cmd.toUpperCase().startsWith("SET ")) {
       parseDoSetCmds(cmd.substring(4));
+    } else {
+      System.out.println("Bad command near: " + cmd);
     }
   }
 
@@ -77,8 +79,14 @@ public class BehavioralParser {
 	} else if (cmd.toUpperCase().endsWith("SECONDARY")) {
           A_Command command = new CommandBehavioralSelectSwitch(id, false);
           parserHelper.getActionProcessor().schedule(command);
+        } else {
+          System.out.println("Bad command near: " + cmd);
         }
+      } else {
+        System.out.println("Bad command near: " + cmd);
       }
+    } else {
+      System.out.println("Bad command near: " + cmd);
     }
   }
 
@@ -100,6 +108,8 @@ public class BehavioralParser {
          } else {
            System.out.println("Bad ID.");
          }
+      } else {
+        System.out.println("Bad command near: " + cmd);
       }
     } else {
       id = cmd.substring(0, cmd.indexOf(" "));
@@ -120,6 +130,8 @@ public class BehavioralParser {
         } else if (cmd.toUpperCase().endsWith("BACKWARD")) {
           A_Command command = new CommandBehavioralSetDirection(id, false);
           parserHelper.getActionProcessor().schedule(command);
+        } else {
+          System.out.println("Bad command near: " + cmd);
         }
       } else if (cmd.toUpperCase().startsWith("SPEED ")) {
         cmd = cmd.substring(6);
@@ -131,6 +143,8 @@ public class BehavioralParser {
         } else {
           System.out.println("Bad ID");
         }
+      } else {
+        System.out.println("Bad command near: " + cmd);
       }
     }
   }

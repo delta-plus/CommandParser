@@ -42,7 +42,7 @@ public class CreationalParser {
     }
 
     private void parseCreatePowerCmds(String cmd) {
-        String id, id2 = "";
+        String id, id2, tempId = "";
         double number;
         StringTokenizer potentialIds;
         List<String> ids = new ArrayList<String>();
@@ -66,13 +66,6 @@ public class CreationalParser {
                 return;
             }
 
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
-                return;
-            }
-
             cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
             if (cmd.toUpperCase().startsWith("WITH POLES ")) {
@@ -80,25 +73,27 @@ public class CreationalParser {
                 potentialIds = new StringTokenizer(cmd);
 
                 while (potentialIds.hasMoreTokens()) {
-                    id = potentialIds.nextToken();
-                    matcher = pattern.matcher(id);
+                    tempId = potentialIds.nextToken();
+                    matcher = pattern.matcher(tempId);
 
                     if (matcher.find()) {
-                        ids.add(id);
+                        ids.add(tempId);
                     } else {
                         System.out.println("Bad ID.");
-                        return;
-                    }
-
-        	    try {
-                        helperMethods.checkId(id);
-                    } catch(Exception e) {
-                        System.out.println("ID already exists: " + id);
                         return;
                     }
                 }
 
                 if (ids.size() > 0) {
+                    try {
+                      List<String> idsToCheck = ids;
+	              idsToCheck.add(id);
+                      helperMethods.checkIds(idsToCheck);
+                    } catch(Exception e) {
+                      System.out.println(e.getMessage());
+                      return;
+                    }
+
                     A_Command command = new CommandCreatePowerCatenary(id, ids);
                     parserHelper.getActionProcessor().schedule(command);
                 } else {
@@ -114,13 +109,6 @@ public class CreationalParser {
 
             if (!matcher.find()) {
                 System.out.println("Bad ID.");
-                return;
-            }
-
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
                 return;
             }
 
@@ -147,10 +135,28 @@ public class CreationalParser {
                         cmd = cmd.substring(5);
 
                         if (cmd.toUpperCase().endsWith("START")) {
+                            try {
+                              List<String> idsToCheck = new ArrayList<String>();
+	                      idsToCheck.add(id);
+                              helperMethods.checkIds(idsToCheck);
+                            } catch(Exception e) {
+                              System.out.println(e.getMessage());
+                              return;
+                            }
+
                             TrackLocator locator = new TrackLocator(id2, number, true);
                             A_Command command = new CommandCreatePowerPole(id, locator);
                             parserHelper.getActionProcessor().schedule(command);
                         } else if (cmd.toUpperCase().endsWith("END")) {
+                            try {
+                              List<String> idsToCheck = new ArrayList<String>();
+	                      idsToCheck.add(id);
+                              helperMethods.checkIds(idsToCheck);
+                            } catch(Exception e) {
+                              System.out.println(e.getMessage());
+                              return;
+                            }
+
                             TrackLocator locator = new TrackLocator(id2, number, false);
                             A_Command command = new CommandCreatePowerPole(id, locator);
                             parserHelper.getActionProcessor().schedule(command);
@@ -182,13 +188,6 @@ public class CreationalParser {
                 return;
             }
 
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
-                return;
-            }
-
             cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
             if (cmd.toUpperCase().startsWith("REFERENCE ")) {
@@ -216,9 +215,8 @@ public class CreationalParser {
                                   new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)),
                                   new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2))
                     );
+                    cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
                 }
-
-                cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
 
                 if (cmd.toUpperCase().startsWith("DELTA ")) {
                     cmd = cmd.substring(6);
@@ -235,25 +233,27 @@ public class CreationalParser {
                         potentialIds = new StringTokenizer(cmd);
 
                         while (potentialIds.hasMoreTokens()) {
-                            id = potentialIds.nextToken();
-                            matcher = pattern.matcher(id);
+                            tempId = potentialIds.nextToken();
+                            matcher = pattern.matcher(tempId);
 
                             if (matcher.find()) {
-                                ids.add(id);
+                                ids.add(tempId);
                             } else {
                                 System.out.println("Bad ID.");
-                                return;
-                            }
-
-	                    try {
-                                helperMethods.checkId(id);
-                            } catch(Exception e) {
-                                System.out.println("ID already exists: " + id);
                                 return;
                             }
                         }
 
                         if (ids.size() > 0) {
+                            try {
+                              List<String> idsToCheck = ids;
+	                      idsToCheck.add(id);
+                              helperMethods.checkIds(idsToCheck);
+                            } catch(Exception e) {
+                              System.out.println(e.getMessage());
+                              return;
+                            }
+
                             A_Command command = new CommandCreatePowerStation(id,
 					        worldCoords,
                                                 new CoordinatesDelta(deltaNum1, deltaNum2),
@@ -269,25 +269,27 @@ public class CreationalParser {
                         potentialIds = new StringTokenizer(cmd);
 
                         while (potentialIds.hasMoreTokens()) {
-                            id = potentialIds.nextToken();
-                            matcher = pattern.matcher(id);
+                            tempId = potentialIds.nextToken();
+                            matcher = pattern.matcher(tempId);
 
                             if (matcher.find()) {
-                                ids.add(id);
+                                ids.add(tempId);
                             } else {
                                 System.out.println("Bad ID.");
-                                return;
-                            }
-
-	                    try {
-                                helperMethods.checkId(id);
-                            } catch(Exception e) {
-                                System.out.println("ID already exists: " + id);
                                 return;
                             }
                         }
 
                         if (ids.size() > 0) {
+                            try {
+                              List<String> idsToCheck = ids;
+	                      idsToCheck.add(id);
+                              helperMethods.checkIds(idsToCheck);
+                            } catch(Exception e) {
+                              System.out.println(e.getMessage());
+                              return;
+                            }
+
                             A_Command command = new CommandCreatePowerStation(id,
 					        worldCoords,
                                                 new CoordinatesDelta(deltaNum1, deltaNum2),
@@ -314,13 +316,6 @@ public class CreationalParser {
 
             if (!matcher.find()) {
                 System.out.println("Bad ID.");
-                return;
-            }
-
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
                 return;
             }
 
@@ -370,25 +365,27 @@ public class CreationalParser {
                         potentialIds = new StringTokenizer(cmd);
 
                         while (potentialIds.hasMoreTokens()) {
-                            id = potentialIds.nextToken();
-                            matcher = pattern.matcher(id);
+                            tempId = potentialIds.nextToken();
+                            matcher = pattern.matcher(tempId);
 
                             if (matcher.find()) {
-                                ids.add(id);
+                                ids.add(tempId);
                             } else {
                                 System.out.println("Bad ID.");
-                                return;
-                            }
-
-	                    try {
-                                helperMethods.checkId(id);
-                            } catch(Exception e) {
-                                System.out.println("ID already exists: " + id);
                                 return;
                             }
                         }
 
                         if (ids.size() > 0) {
+                            try {
+                              List<String> idsToCheck = ids;
+	                      idsToCheck.add(id);
+                              helperMethods.checkIds(idsToCheck);
+                            } catch(Exception e) {
+                              System.out.println(e.getMessage());
+                              return;
+                            }
+
                             A_Command command = new CommandCreatePowerSubstation(id,
 					        worldCoords,
                                                 new CoordinatesDelta(deltaNum1, deltaNum2),
@@ -412,8 +409,7 @@ public class CreationalParser {
     }
 
     private void parseCreateStockCmds(String cmd) {
-        String id;
-        String id2;
+        String id, id2, tempId = "";
         double distance;
         Pattern pattern = Pattern.compile("^[_a-zA-Z]+\\w*$");
         Matcher matcher;
@@ -430,19 +426,30 @@ public class CreationalParser {
                 return;
             }
 
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
-                return;
-            }
-
             cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
             if (cmd.toUpperCase().endsWith("AS BOX")) {
+                try {
+                  List<String> idsToCheck = new ArrayList<String>();
+                  idsToCheck.add(id);
+                  helperMethods.checkIds(idsToCheck);
+                } catch(Exception e) {
+                  System.out.println(e.getMessage());
+                  return;
+                }
+
                 A_Command command = new CommandCreateStockCarBox(id);
                 parserHelper.getActionProcessor().schedule(command);
             } else if (cmd.toUpperCase().endsWith("AS CABOOSE")) {
+                try {
+                  List<String> idsToCheck = new ArrayList<String>();
+                  idsToCheck.add(id);
+                  helperMethods.checkIds(idsToCheck);
+                } catch(Exception e) {
+                  System.out.println(e.getMessage());
+                  return;
+                }
+
                 A_Command command = new CommandCreateStockCarCaboose(id);
                 parserHelper.getActionProcessor().schedule(command);
             } else {
@@ -457,13 +464,6 @@ public class CreationalParser {
 
             if (!matcher.find()) {
                 System.out.println("Bad ID.");
-                return;
-            }
-
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
                 return;
             }
 
@@ -487,15 +487,51 @@ public class CreationalParser {
                     cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
                     if (cmd.toUpperCase().endsWith("FROM START FACING START")) {
+                        try {
+                          List<String> idsToCheck = new ArrayList<String>();
+                          idsToCheck.add(id);
+                          helperMethods.checkIds(idsToCheck);
+                        } catch(Exception e) {
+                          System.out.println(e.getMessage());
+                          return;
+                        }
+
                         A_Command command = new CommandCreateStockEngineDiesel(id, new TrackLocator(id2, distance, true), true);
                         parserHelper.getActionProcessor().schedule(command);
                     } else if (cmd.toUpperCase().endsWith("FROM START FACING END")) {
+                        try {
+                          List<String> idsToCheck = new ArrayList<String>();
+                          idsToCheck.add(id);
+                          helperMethods.checkIds(idsToCheck);
+                        } catch(Exception e) {
+                          System.out.println(e.getMessage());
+                          return;
+                        }
+
                         A_Command command = new CommandCreateStockEngineDiesel(id, new TrackLocator(id2, distance, true), false);
                         parserHelper.getActionProcessor().schedule(command);
                     } else if (cmd.toUpperCase().endsWith("FROM END FACING START")) {
+                        try {
+                          List<String> idsToCheck = new ArrayList<String>();
+                          idsToCheck.add(id);
+                          helperMethods.checkIds(idsToCheck);
+                        } catch(Exception e) {
+                          System.out.println(e.getMessage());
+                          return;
+                        }
+
                         A_Command command = new CommandCreateStockEngineDiesel(id, new TrackLocator(id2, distance, false), true);
                         parserHelper.getActionProcessor().schedule(command);
                     } else if (cmd.toUpperCase().endsWith("FROM END FACING END")) {
+                        try {
+                          List<String> idsToCheck = new ArrayList<String>();
+                          idsToCheck.add(id);
+                          helperMethods.checkIds(idsToCheck);
+                        } catch(Exception e) {
+                          System.out.println(e.getMessage());
+                          return;
+                        }
+
                         A_Command command = new CommandCreateStockEngineDiesel(id, new TrackLocator(id2, distance, false), false);
                         parserHelper.getActionProcessor().schedule(command);
                     } else {
@@ -511,8 +547,7 @@ public class CreationalParser {
     }
 
     private void parseCreateTrackCmds(String cmd) {
-        String id;
-        String id2 = "";
+        String id, id2, tempId = "";
         double distance1;
         double distance2;
         Angle angle1, angle2, angle3;
@@ -540,13 +575,6 @@ public class CreationalParser {
 
             if (!matcher.find()) {
                 System.out.println("Bad ID.");
-                return;
-            }
-
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
                 return;
             }
 
@@ -581,8 +609,6 @@ public class CreationalParser {
                     cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
                 }
 
-
-
                 if(cmd.toUpperCase().startsWith("DELTA START ")){
                     cmd = cmd.substring(12);
 
@@ -591,7 +617,7 @@ public class CreationalParser {
                         deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.toUpperCase().indexOf("END")).trim());
                         deltaCoords1 = new CoordinatesDelta(deltaNum1, deltaNum2);
                     } catch (Exception e) {
-                        System.out.println(e);
+                        System.out.println(e.getMessage());
                         return;
                     }
 
@@ -603,7 +629,7 @@ public class CreationalParser {
                         deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
                         deltaCoords2 = new CoordinatesDelta(deltaNum1, deltaNum2);
                     } catch (Exception e) {
-                        System.out.println(e);
+                        System.out.println(e.getMessage());
                         return;
                     }
 
@@ -615,8 +641,17 @@ public class CreationalParser {
                         try {
                             distance1 = helperMethods.parseNumber(cmd);
                         } catch (Exception e) {
-                            System.out.println(e);
+                            System.out.println(e.getMessage());
                             return;
+                        }
+
+                        try {
+                          List<String> idsToCheck = new ArrayList<String>();
+                          idsToCheck.add(id);
+                          helperMethods.checkIds(idsToCheck);
+                        } catch(Exception e) {
+                          System.out.println(e.getMessage());
+                          return;
                         }
 
                         A_Command command = new CommandCreateTrackCurve(id, worldCoords, deltaCoords1, deltaCoords2, distance1);
@@ -629,8 +664,17 @@ public class CreationalParser {
                             deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1));
                             deltaCoords3 = new CoordinatesDelta(deltaNum1, deltaNum2);
                         } catch (Exception e) {
-                            System.out.println(e);
+                            System.out.println(e.getMessage());
                             return;
+                        }
+
+                        try {
+                          List<String> idsToCheck = new ArrayList<String>();
+                          idsToCheck.add(id);
+                          helperMethods.checkIds(idsToCheck);
+                        } catch(Exception e) {
+                          System.out.println(e.getMessage());
+                          return;
                         }
 
                         A_Command command = new CommandCreateTrackCurve(id, worldCoords, deltaCoords1, deltaCoords2, deltaCoords3);
@@ -658,13 +702,6 @@ public class CreationalParser {
                 return;
             }
 
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
-                return;
-            }
-
             cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
             if (cmd.toUpperCase().startsWith("WITH TRACKS ")) {
@@ -672,25 +709,27 @@ public class CreationalParser {
                 potentialIds = new StringTokenizer(cmd);
 
                 while (potentialIds.hasMoreTokens()) {
-                    id = potentialIds.nextToken();
-                    matcher = pattern.matcher(id);
+                    tempId = potentialIds.nextToken();
+                    matcher = pattern.matcher(tempId);
 
                     if (matcher.find()) {
-                        ids.add(id);
+                        ids.add(tempId);
                     } else {
                         System.out.println("Bad ID.");
-                        return;
-                    }
-
-	            try {
-                        helperMethods.checkId(id);
-                    } catch(Exception e) {
-                        System.out.println("ID already exists: " + id);
                         return;
                     }
                 }
 
                 if (ids.size() > 0) {
+                    try {
+                      List<String> idsToCheck = ids;
+                      idsToCheck.add(id);
+                      helperMethods.checkIds(idsToCheck);
+                    } catch(Exception e) {
+                      System.out.println(e.getMessage());
+                      return;
+                    }
+
                     A_Command command = new CommandCreateTrackLayout(id, ids);
                     parserHelper.getActionProcessor().schedule(command);
                 } else {
@@ -708,13 +747,6 @@ public class CreationalParser {
 
             if (!matcher.find()) {
                 System.out.println("Bad ID.");
-                return;
-            }
-
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
                 return;
             }
 
@@ -757,7 +789,7 @@ public class CreationalParser {
                         deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
                         deltaCoords1 = new CoordinatesDelta(deltaNum1, deltaNum2);
                     } catch (Exception e) {
-                        System.out.println(e);
+                        System.out.println(e.getMessage());
                         return;
                     }
 
@@ -768,9 +800,8 @@ public class CreationalParser {
 
                         try {
                             angle1 = new Angle(helperMethods.parseNumber(cmd.substring(0, cmd.indexOf(" "))));
-
                         } catch (Exception e) {
-                            System.out.println(e);
+                            System.out.println(e.getMessage());
                             return;
                         }
 
@@ -782,7 +813,7 @@ public class CreationalParser {
                             try {
                                 angle2 = new Angle(helperMethods.parseNumber(cmd.substring(0, cmd.indexOf(" "))));
                             } catch (Exception e) {
-                                System.out.println(e);
+                                System.out.println(e.getMessage());
                                 return;
                             }
                             cmd = cmd.substring(cmd.indexOf(" ")+1);
@@ -793,7 +824,7 @@ public class CreationalParser {
                                 try {
                                     angle3 = new Angle(helperMethods.parseNumber(cmd.substring(0, cmd.indexOf(" "))));
                                 } catch (Exception e) {
-                                    System.out.println(e);
+                                    System.out.println(e.getMessage());
                                     return;
                                 }
                                 cmd = cmd.substring(cmd.indexOf(" ")+1);
@@ -804,7 +835,7 @@ public class CreationalParser {
                                     try {
                                         int1 = helperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
                                     } catch (Exception e) {
-                                        System.out.println(e);
+                                        System.out.println(e.getMessage());
                                         return;
                                     }
                                     cmd = cmd.substring(cmd.indexOf(" ")+1);
@@ -815,7 +846,7 @@ public class CreationalParser {
                                         try {
                                             distance1 = helperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
                                         } catch (Exception e) {
-                                            System.out.println(e);
+                                            System.out.println(e.getMessage());
                                             return;
                                         }
                                         cmd = cmd.substring(cmd.indexOf(" ")+1);
@@ -826,8 +857,17 @@ public class CreationalParser {
                                             try {
                                                 distance2 = helperMethods.parseInteger(cmd);
                                             } catch (Exception e) {
-                                                System.out.println(e);
+                                                System.out.println(e.getMessage());
                                                 return;
+                                            }
+
+                                            try {
+                                              List<String> idsToCheck = new ArrayList<String>();
+                                              idsToCheck.add(id);
+                                              helperMethods.checkIds(idsToCheck);
+                                            } catch(Exception e) {
+                                              System.out.println(e.getMessage());
+                                              return;
                                             }
 
                                             A_Command command = new CommandCreateTrackRoundhouse(id, worldCoords, deltaCoords1, angle1, angle2, angle3, int1, distance1, distance2);
@@ -873,13 +913,6 @@ public class CreationalParser {
                 return;
             }
 
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
-                return;
-            }
-
             cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
             if (cmd.toUpperCase().startsWith("REFERENCE ")) {
@@ -908,9 +941,8 @@ public class CreationalParser {
                             new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)),
                             new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2))
                     );
+                    cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
                 }
-
-                cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
 
                 if (cmd.toUpperCase().startsWith("DELTA START ")) {
                     cmd = cmd.substring(12);
@@ -920,7 +952,7 @@ public class CreationalParser {
                         deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.toUpperCase().indexOf("END")).trim());
                         deltaCoords1 = new CoordinatesDelta(deltaNum1, deltaNum2);
                     } catch (Exception e) {
-                        System.out.println(e);
+                        System.out.println(e.getMessage());
                         return;
                     }
 
@@ -932,8 +964,17 @@ public class CreationalParser {
                         deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1).trim());
                         deltaCoords2 = new CoordinatesDelta(deltaNum1, deltaNum2);
                     } catch (Exception e) {
-                        System.out.println(e);
+                        System.out.println(e.getMessage());
                         return;
+                    }
+
+                    try {
+                      List<String> idsToCheck = new ArrayList<String>();
+                      idsToCheck.add(id);
+                      helperMethods.checkIds(idsToCheck);
+                    } catch(Exception e) {
+                      System.out.println(e.getMessage());
+                      return;
                     }
 
                     A_Command command = new CommandCreateTrackStraight(id, new PointLocator(worldCoords, deltaCoords1, deltaCoords2));
@@ -954,13 +995,6 @@ public class CreationalParser {
 
             if (!matcher.find()) {
                 System.out.println("Bad ID.");
-                return;
-            }
-
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
                 return;
             }
 
@@ -1003,7 +1037,7 @@ public class CreationalParser {
                         deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.toUpperCase().indexOf("END")).trim());
                         deltaCoords1 = new CoordinatesDelta(deltaNum1, deltaNum2);
                     } catch (Exception e) {
-                        System.out.println(e);
+                        System.out.println(e.getMessage());
                         return;
                     }
 
@@ -1015,7 +1049,7 @@ public class CreationalParser {
                         deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
                         deltaCoords2 = new CoordinatesDelta(deltaNum1, deltaNum2);
                     } catch (Exception e) {
-                        System.out.println(e);
+                        System.out.println(e.getMessage());
                         return;
                     }
 
@@ -1029,7 +1063,7 @@ public class CreationalParser {
                             deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.toUpperCase().indexOf("END")).trim());
                             deltaCoords3 = new CoordinatesDelta(deltaNum1, deltaNum2);
                         } catch (Exception e) {
-                            System.out.println(e);
+                            System.out.println(e.getMessage());
                             return;
                         }
 
@@ -1041,7 +1075,7 @@ public class CreationalParser {
                             deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
                             deltaCoords4 = new CoordinatesDelta(deltaNum1, deltaNum2);
                         } catch (Exception e) {
-                            System.out.println(e);
+                            System.out.println(e.getMessage());
                             return;
                         }
 
@@ -1053,8 +1087,17 @@ public class CreationalParser {
                             try {
                                 distance1 = helperMethods.parseInteger(cmd);
                             } catch (Exception e) {
-                                System.out.println(e);
+                                System.out.println(e.getMessage());
                                 return;
+                            }
+
+                            try {
+                              List<String> idsToCheck = new ArrayList<String>();
+                              idsToCheck.add(id);
+                              helperMethods.checkIds(idsToCheck);
+                            } catch(Exception e) {
+                              System.out.println(e.getMessage());
+                              return;
                             }
 
                             arc1 = new ShapeArc(worldCoords, deltaCoords3, deltaCoords4, distance1);
@@ -1082,13 +1125,6 @@ public class CreationalParser {
 
             if (!matcher.find()) {
                 System.out.println("Bad ID.");
-                return;
-            }
-
-	    try {
-                helperMethods.checkId(id);
-            } catch(Exception e) {
-                System.out.println("ID already exists: " + id);
                 return;
             }
 
@@ -1120,9 +1156,8 @@ public class CreationalParser {
                             new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)),
                             new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2))
                     );
+                    cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
                 }
-
-                cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
 
                 if (cmd.toUpperCase().startsWith("DELTA START ")) {
                     cmd = cmd.substring(12);
@@ -1132,7 +1167,7 @@ public class CreationalParser {
                         deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.toUpperCase().indexOf("END")).trim());
                         deltaCoords1 = new CoordinatesDelta(deltaNum1, deltaNum2);
                     } catch (Exception e) {
-                        System.out.println(e);
+                        System.out.println(e.getMessage());
                         return;
                     }
 
@@ -1144,7 +1179,7 @@ public class CreationalParser {
                         deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
                         deltaCoords2 = new CoordinatesDelta(deltaNum1, deltaNum2);
                     } catch (Exception e) {
-                        System.out.println(e);
+                        System.out.println(e.getMessage());
                         return;
                     }
 
@@ -1156,7 +1191,7 @@ public class CreationalParser {
                         try {
                             distance1 = helperMethods.parseNumber(cmd.substring(0, cmd.indexOf(" ")));
                         } catch (Exception e) {
-                            System.out.println(e);
+                            System.out.println(e.getMessage());
                             return;
                         }
 
@@ -1170,7 +1205,7 @@ public class CreationalParser {
                                 deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.toUpperCase().indexOf("END")).trim());
                                 deltaCoords3 = new CoordinatesDelta(deltaNum1, deltaNum2);
                             } catch (Exception e) {
-                                System.out.println(e);
+                                System.out.println(e.getMessage());
                                 return;
                             }
 
@@ -1182,7 +1217,7 @@ public class CreationalParser {
                                 deltaNum2 = helperMethods.parseNumber(cmd.substring(cmd.indexOf(":") + 1, cmd.indexOf(" ")));
                                 deltaCoords4 = new CoordinatesDelta(deltaNum1, deltaNum2);
                             } catch (Exception e) {
-                                System.out.println(e);
+                                System.out.println(e.getMessage());
                                 return;
                             }
 
@@ -1194,8 +1229,17 @@ public class CreationalParser {
                                 try {
                                     distance2 = helperMethods.parseNumber(cmd);
                                 } catch (Exception e) {
-                                    System.out.println(e);
+                                    System.out.println(e.getMessage());
                                     return;
+                                }
+
+                                try {
+                                  List<String> idsToCheck = new ArrayList<String>();
+                                  idsToCheck.add(id);
+                                  helperMethods.checkIds(idsToCheck);
+                                } catch(Exception e) {
+                                  System.out.println(e.getMessage());
+                                  return;
                                 }
 
                                 A_Command command = new CommandCreateTrackSwitchWye(id, worldCoords, deltaCoords1, deltaCoords2, 

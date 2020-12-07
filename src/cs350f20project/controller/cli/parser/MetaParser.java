@@ -44,7 +44,7 @@ public class MetaParser {
 
   public void parseMetaOpen(String cmd) {
     String id, id2 = "";
-    int int1, int2, int3;
+    int int1, int2, int3 = 0;
     List<Double> latitude = new ArrayList<Double>();
     List<Double> longitude = new ArrayList<Double>();
     CoordinatesWorld worldCoords;
@@ -60,13 +60,6 @@ public class MetaParser {
 
       if (!matcher.find()) {
         System.out.println("Bad ID");
-        return;
-      }
-
-      try {
-        helperMethods.checkId(id);
-      } catch(Exception e) {
-        System.out.println("ID already exists: " + id);
         return;
       }
 
@@ -103,17 +96,45 @@ public class MetaParser {
 
         if (cmd.toUpperCase().startsWith("WORLD WIDTH ")) {
           cmd = cmd.substring(12);
-          int1 = helperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
+
+	  try {
+            int1 = helperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
+	  } catch(Exception e) {
+            System.out.println("Bad integer near: " + cmd);
+	    return;
+          }
+
           cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
           if (cmd.toUpperCase().startsWith("SCREEN WIDTH ")) {
             cmd = cmd.substring(13);
-            int2 = helperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
+
+	    try {
+              int2 = helperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
+	    } catch(Exception e) {
+              System.out.println("Bad integer near: " + cmd);
+	      return;
+            }
+
             cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
             if (cmd.toUpperCase().startsWith("HEIGHT ")) {
               cmd = cmd.substring(7);
-              int3 = helperMethods.parseInteger(cmd);
+              
+	      try {
+                int3 = helperMethods.parseInteger(cmd);
+	      } catch(Exception e) {
+                System.out.println("Bad integer near: " + cmd);
+              }
+
+              try {
+                ArrayList<String> idsToCheck = new ArrayList<String>();
+		idsToCheck.add(id);
+                helperMethods.checkIds(idsToCheck);
+              } catch(Exception e) {
+                System.out.println(e.getMessage());
+                return;
+              }
 
               screen = new CoordinatesScreen(int2, int3);
               A_Command command = new CommandMetaViewGenerate(id, worldCoords, int1, screen);
