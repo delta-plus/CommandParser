@@ -21,9 +21,11 @@ import cs350f20project.controller.cli.parser.HelperMethods;
 
 public class MetaParser {
   private A_ParserHelper parserHelper;
+  private HelperMethods helperMethods;
 
   public MetaParser(MyParserHelper parserHelper) {
     this.parserHelper = parserHelper;
+    this.helperMethods = new HelperMethods(parserHelper);
   }
 
   public void parseMetaCmds(String cmd) {
@@ -41,23 +43,30 @@ public class MetaParser {
   }
 
   public void parseMetaOpen(String cmd) {
-    String id1, id2 = "";
+    String id, id2 = "";
     int int1, int2, int3;
     List<Double> latitude = new ArrayList<Double>();
     List<Double> longitude = new ArrayList<Double>();
-    CoordinatesWorld cord;
+    CoordinatesWorld worldCoords;
     CoordinatesScreen screen;
-    Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+    Pattern pattern = Pattern.compile("^[_a-zA-Z]+\\w*$");
     Pattern numPattern = Pattern.compile("^[0-9]+(\\.[0-9]+)?$");
     Matcher matcher;
 
     if (cmd.toUpperCase().startsWith("VIEW ")) {
       cmd = cmd.substring(5);
-      id1 = cmd.substring(0, cmd.indexOf(" "));
-      matcher = pattern.matcher(id1);
+      id = cmd.substring(0, cmd.indexOf(" "));
+      matcher = pattern.matcher(id);
 
       if (!matcher.find()) {
         System.out.println("Bad ID");
+        return;
+      }
+
+      try {
+        helperMethods.checkId(id);
+      } catch(Exception e) {
+        System.out.println("ID already exists: " + id);
         return;
       }
 
@@ -68,48 +77,47 @@ public class MetaParser {
 
         if (cmd.toUpperCase().startsWith("$")) {
           id2 = cmd.substring(1, cmd.indexOf(" "));
-          matcher = pattern.matcher(id2);
 
-          if (!matcher.find()) {
-            System.out.println("Bad ID");
+          if (!parserHelper.hasReference(id2)) {
+            System.out.println("ID not found: " + id2);
             return;
           }
-          cmd = cmd.substring(cmd.indexOf(" ")+1);
-        } else {
-          latitude = HelperMethods.parseLatOrLong(cmd.substring(0, cmd.indexOf("\"") + 1).replaceAll("\\s+", ""));
-          longitude = HelperMethods.parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 1).replaceAll("\\s+", ""));
-          cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
 
+	  worldCoords = parserHelper.getReference(id2);
+          cmd = cmd.substring(cmd.indexOf(" ") + 1);
+        } else {
+          try {
+            latitude = helperMethods.parseLatOrLong(cmd.substring(0, cmd.indexOf("\"") + 1).replaceAll("\\s+", ""));
+            longitude = helperMethods.parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 1).replaceAll("\\s+", ""));
+	  } catch(Exception e) {
+            System.out.println("Bad latitude or longitude: " + e);
+	    return;
+          }
+
+          worldCoords = new CoordinatesWorld(
+                        new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)),
+                        new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2))
+          );
+          cmd = cmd.substring(cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 2);
         }
 
         if (cmd.toUpperCase().startsWith("WORLD WIDTH ")) {
           cmd = cmd.substring(12);
-          int1 = HelperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
+          int1 = helperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
           cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
           if (cmd.toUpperCase().startsWith("SCREEN WIDTH ")) {
             cmd = cmd.substring(13);
-            int2 = HelperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
+            int2 = helperMethods.parseInteger(cmd.substring(0, cmd.indexOf(" ")));
             cmd = cmd.substring(cmd.indexOf(" ") + 1);
 
             if (cmd.toUpperCase().startsWith("HEIGHT ")) {
               cmd = cmd.substring(7);
-              int3 = HelperMethods.parseInteger(cmd);
+              int3 = helperMethods.parseInteger(cmd);
 
-              if(id2.length() == 0){
-                cord = new CoordinatesWorld(
-                        new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)),
-                        new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2)));
-                screen = new CoordinatesScreen(int2, int3);
-                A_Command command = new CommandMetaViewGenerate(id1, cord, int1, screen);
-                parserHelper.getActionProcessor().schedule(command);
-              } else {
-                cord = parserHelper.getReference(id2);
-                screen = new CoordinatesScreen(int2, int3);
-                A_Command command = new CommandMetaViewGenerate(id1, cord, int1, screen);
-                parserHelper.getActionProcessor().schedule(command);
-              }
-
+              screen = new CoordinatesScreen(int2, int3);
+              A_Command command = new CommandMetaViewGenerate(id, worldCoords, int1, screen);
+              parserHelper.getActionProcessor().schedule(command);
             }
           }
         }

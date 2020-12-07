@@ -21,9 +21,11 @@ import cs350f20project.controller.cli.parser.HelperMethods;
 
 public class BehavioralParser {
   private A_ParserHelper parserHelper;
+  private HelperMethods helperMethods;
 
   public BehavioralParser(MyParserHelper parserHelper) {
     this.parserHelper = parserHelper;
+    this.helperMethods = new HelperMethods(parserHelper);
   }
 
   public void parseDoCmds(String cmd) {
@@ -51,7 +53,7 @@ public class BehavioralParser {
 
   private void parseDoSelectCmds(String cmd) {
     String id;
-    Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+    Pattern pattern = Pattern.compile("^[_a-zA-Z]+\\w*$");
     Matcher matcher;
 
     if (cmd.toUpperCase().startsWith("SWITCH ")) {
@@ -82,7 +84,7 @@ public class BehavioralParser {
 
   private void parseDoSetCmds(String cmd) {
     String id;
-    Pattern pattern = Pattern.compile("^[a-zA-Z]+\\w*$");
+    Pattern pattern = Pattern.compile("^[_a-zA-Z]+\\w*$");
     Matcher matcher;
 
     if (cmd.toUpperCase().startsWith("REFERENCE ")) {

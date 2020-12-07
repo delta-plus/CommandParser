@@ -21,9 +21,11 @@ import cs350f20project.controller.cli.parser.HelperMethods;
 
 public class StructuralParser {
     private A_ParserHelper parserHelper;
+    private HelperMethods helperMethods;
 
     public StructuralParser(MyParserHelper parserHelper) {
         this.parserHelper = parserHelper;
+	this.helperMethods = new HelperMethods(parserHelper);
     }
 
     public void parseStructCmds(String cmd) {
@@ -159,8 +161,9 @@ public class StructuralParser {
       cmd = cmd.substring(13);
 
       try {
-        latitude = HelperMethods.parseLatOrLong(cmd.substring(0, cmd.indexOf("\"") + 1).replaceAll("\\s+", ""));
-        longitude = HelperMethods.parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 1).replaceAll("\\s+", ""));
+        latitude = helperMethods.parseLatOrLong(cmd.substring(0, cmd.indexOf("\"") + 1).replaceAll("\\s+", ""));
+        longitude = helperMethods.parseLatOrLong(cmd.substring(cmd.indexOf("/") + 1, cmd.indexOf("\"", cmd.indexOf("\"") + 1) + 1).replaceAll("\\s+", ""));
+
         worldCoords = new CoordinatesWorld(
           new Latitude(latitude.get(0).intValue(), latitude.get(1).intValue(), latitude.get(2)), 
           new Longitude(longitude.get(0).intValue(), longitude.get(1).intValue(), longitude.get(2))
@@ -170,7 +173,11 @@ public class StructuralParser {
 	return;
       }
 
-      parserHelper.addReference(id, worldCoords);
+      if (!parserHelper.hasReference(id)) {
+        parserHelper.addReference(id, worldCoords);
+      } else {
+        System.out.println("ID already exists: " + id);
+      }
     } else {
       System.out.println("Bad command near: " + cmd);
     }
