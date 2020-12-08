@@ -64,6 +64,7 @@ public class CommandParser {
           }
 	} catch(Exception e) {
           System.out.println("Bad command near: " + cmd);
+          System.out.println(e.getMessage());
         }
       }
     }

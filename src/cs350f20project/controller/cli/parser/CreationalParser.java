@@ -395,13 +395,13 @@ public class CreationalParser {
                           System.out.println("Bad ID.");
                         }
                     } else {
-                        System.out.println("Bad command.");
+                        System.out.println("Bad command near: " + cmd);
                     }
                 } else {
-                    System.out.println("Bad command.");
+                    System.out.println("Bad command near: " + cmd);
                 }
             } else {
-                System.out.println("Bad command.");
+                System.out.println("Bad command near: " + cmd);
             }
         } else {
             System.out.println("Bad command near: " + cmd);
